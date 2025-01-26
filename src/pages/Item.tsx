@@ -1,40 +1,42 @@
-import React, { useState } from "react"
-import { Trash, Trash2 } from "react-feather"
+import  {useEffect, useState} from "react"
+import { Trash2 } from "react-feather"
+import {ItemModel} from "../model/ItemModel.ts";
+import {useDispatch, useSelector} from "react-redux";
+import {AppDispatch} from "../store/store.tsx";
+import {deleteItem, getAllItems, saveItem, updateItem} from "../slice/ItemSlice.ts";
 
 function Item() {
-  const [items, setItems] = useState([
-    { item_id: "I001", name: "Arduino Board", quantity: 10, price: 20.5 },
-    { item_id: "I002", name: "Raspberry Pi", quantity: 5, price: 35.0 }
-  ])
 
+  const dispatch = useDispatch<AppDispatch>();
+  const items: ItemModel[] =useSelector((state: { item: ItemModel[] }) => state.item);
   const [itemId, setItemId] = useState("")
   const [name, setName] = useState("")
   const [quantity, setQuantity] = useState("")
   const [price, setPrice] = useState("")
   const [isEditing, setIsEditing] = useState(false)
 
+  useEffect(() => {
+    if (items.length === 0) {
+      dispatch(getAllItems());
+    }
+    setItemId(items.length > 0 ? (items[items.length - 1].id + 1).toString() : "1")
+  }, [dispatch, items.length]);
+
   const handleAdd = () => {
     if (!itemId || !name || !quantity || !price) {
       alert("All fields are required!")
       return
     }
-    setItems([
-      ...items,
-      {
-        item_id: itemId,
-        name,
-        quantity: parseInt(quantity),
-        price: parseFloat(price)
-      }
-    ])
+    const item = new ItemModel(parseInt(itemId), name, parseInt(quantity), parseFloat(price));
+    dispatch(saveItem(item));
     resetForm()
   }
 
-  const handleEdit = (item: any) => {
-    setItemId(item.item_id)
+  const handleEdit = (item: ItemModel) => {
+    setItemId(item.id.toString())
     setName(item.name)
-    setQuantity(item.quantity)
-    setPrice(item.price)
+    setQuantity(item.quantity.toString())
+    setPrice(item.price.toString())
     setIsEditing(true)
   }
 
@@ -43,24 +45,14 @@ function Item() {
       alert("All fields are required!")
       return
     }
-    setItems(
-      items.map((item) =>
-        item.item_id === itemId
-          ? {
-              item_id: itemId,
-              name,
-              quantity: parseInt(quantity),
-              price: parseFloat(price)
-            }
-          : item
-      )
-    )
+    const item = new ItemModel(parseInt(itemId), name, parseInt(quantity), parseFloat(price));
+    dispatch(updateItem(item));
     resetForm()
   }
 
   const handleDelete = (itemId: string) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      setItems(items.filter((item) => item.item_id !== itemId))
+        dispatch(deleteItem(itemId));
     }
   }
 
@@ -80,7 +72,6 @@ function Item() {
           name="item_id"
           placeholder="Item ID"
           value={itemId}
-          onChange={(e) => setItemId(e.target.value)}
           className="border p-2 rounded"
         />
         <input
@@ -147,19 +138,19 @@ function Item() {
         <tbody>
           {items.map((item) => (
             <tr
-              key={item.item_id}
+              key={item.id}
               onClick={() => handleEdit(item)}
               className="hover:cursor-pointer hover:bg-slate-600 hover:text-white"
             >
-              <td className="border px-4 py-2">{item.item_id}</td>
+              <td className="border px-4 py-2">{item.id}</td>
               <td className="border px-4 py-2">{item.name}</td>
               <td className="border px-4 py-2">{item.quantity}</td>
-              <td className="border px-4 py-2">{item.price.toFixed(2)}</td>
+              <td className="border px-4 py-2">{Number(item.price).toFixed(2)}</td>
               <td className="border px-4 py-2 text-center">
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleDelete(item.item_id)
+                    handleDelete(item.id.toString())
                   }}
                   className="bg-red-500 text-white p-2 rounded-lg"
                 >

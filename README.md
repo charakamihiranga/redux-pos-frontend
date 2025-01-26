@@ -16,13 +16,6 @@ A **React** and **Redux** based Point-of-Sale (POS) system frontend for managing
 - Create and manage orders.
 - Associate orders with customers and items.
 
-### State Management
-- Centralized state management using **Redux Toolkit**.
-- Async actions with `createAsyncThunk` for API integration.
-
-### API Integration
-- RESTful API interactions using **Axios**.
-
 ## Technologies Used
 
 - **React**: For building the user interface.

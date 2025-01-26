@@ -5,6 +5,8 @@ import Customer from "./pages/Customer"
 import Item from "./pages/Item"
 import PlaceOrder from "./pages/PlaceOrder"
 import Dashboard from "./pages/Dashboard"
+import {Provider} from "react-redux";
+import {store} from "./store/store.tsx";
 
 function App() {
   const routes = createBrowserRouter([
@@ -22,7 +24,10 @@ function App() {
 
   return (
     <>
-      <RouterProvider router={routes} />
+      <Provider store={store}>
+        <RouterProvider router={routes} />
+      </Provider>
+
     </>
   )
 }

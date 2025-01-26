@@ -1,24 +1,14 @@
-import  { useState } from "react"
+import {useEffect, useState} from "react"
 import { Trash2 } from "react-feather"
+import {useDispatch, useSelector} from "react-redux";
+import {AppDispatch} from "../store/store.tsx";
+import {CustomerModel} from "../model/CustomerModel.ts";
+import {deleteCustomer, getAllCustomers, saveCustomer, updateCustomer} from "../slice/CustomerSlice.ts";
 
 function Customer() {
-  const [customers, setCustomers] = useState([
-    {
-      id: "C001",
-      name: "John Doe",
-      nic: "123456789V",
-      email: "john@example.com",
-      phone: "1234567890"
-    },
-    {
-      id: "C002",
-      name: "Jane Smith",
-      nic: "987654321X",
-      email: "jane@example.com",
-      phone: "0987654321"
-    }
-  ])
 
+  const dispatch = useDispatch<AppDispatch>();
+  const customers: CustomerModel[] = useSelector((state: { customer: CustomerModel[] }) => state.customer);
   const [id, setId] = useState("")
   const [name, setName] = useState("")
   const [nic, setNic] = useState("")
@@ -26,17 +16,31 @@ function Customer() {
   const [phone, setPhone] = useState("")
   const [isEditing, setIsEditing] = useState(false)
 
+  useEffect(() => {
+    if (customers.length === 0) {
+      dispatch(getAllCustomers());
+    }
+    setId(customers.length > 0 ? (customers[customers.length - 1].id + 1).toString() : "1")
+  }, [dispatch, customers.length]);
+
   const handleAdd = () => {
-    if (!id || !name || !nic || !email || !phone) {
+    if ( !name || !nic || !email || !phone) {
       alert("All fields are required!")
       return
     }
-    setCustomers([...customers, { id, name, nic, email, phone }])
+    const newCustomer =  new CustomerModel(
+        id,
+        name,
+        nic,
+        email,
+        phone
+    );
+    dispatch(saveCustomer(newCustomer));
     resetForm()
   }
 
-  const handleEdit = (customer: any) => {
-    setId(customer.id)
+  const handleEdit = (customer: CustomerModel) => {
+    setId(customer.id.toString())
     setName(customer.name)
     setNic(customer.nic)
     setEmail(customer.email)
@@ -45,26 +49,29 @@ function Customer() {
   }
 
   const handleUpdate = () => {
-    if (!id || !name || !nic || !email || !phone) {
+    if (!name || !nic || !email || !phone) {
       alert("All fields are required!")
       return
     }
-    setCustomers(
-      customers.map((customer) =>
-        customer.id === id ? { id, name, nic, email, phone } : customer
-      )
-    )
+    const updatedCustomer = new CustomerModel(
+        id,
+        name,
+        nic,
+        email,
+        phone
+    );
+    dispatch(updateCustomer(updatedCustomer));
     resetForm()
   }
 
-  const handleDelete = (customerId: string) => {
+    const handleDelete = (customerId: string) => {
     if (window.confirm("Are you sure you want to delete this customer?")) {
-      setCustomers(customers.filter((customer) => customer.id !== customerId))
+      dispatch(deleteCustomer(customerId));
     }
+
   }
 
   const resetForm = () => {
-    setId("")
     setName("")
     setNic("")
     setEmail("")
@@ -79,8 +86,8 @@ function Customer() {
           type="text"
           name="id"
           placeholder="ID"
+          readOnly
           value={id}
-          onChange={(e) => setId(e.target.value)}
           className="border p-2 rounded"
         />
         <input
@@ -166,7 +173,7 @@ function Customer() {
               <td className="border px-4 py-2">{customer.phone}</td>
               <td className="border px-4 py-2 text-center">
                 <button
-                  onClick={() => handleDelete(customer.id)}
+                  onClick={() => handleDelete(customer.id.toString())}
                   className="bg-red-500 text-white p-2 rounded-lg"
                 >
                   <Trash2 />

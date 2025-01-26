@@ -1,11 +1,11 @@
-export class Customer {
+export class CustomerModel {
     id: string;
     name: string;
     nic: string;
     email: string;
     phone: string;
 
-    constructor(id: string, name: string, nic: string, email: string, phone: string) {
+    constructor( id: string, name: string, nic: string, email: string, phone: string) {
         this.id = id;
         this.name = name;
         this.nic = nic;
